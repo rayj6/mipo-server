@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2, user-scalable=yes">
+  <title>Photo Strip - Template 1</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { min-height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F5F5F7;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px 16px;
+    }
+
+    /* Strip: narrow portrait, top = light pastel blue → bottom = off-white / light grey */
+    .strip {
+      width: 280px;
+      min-height: 1180px;
+      flex-shrink: 0;
+      background: linear-gradient(180deg,
+        #c8d8e8 0%,
+        #d8e4ee 18%,
+        #e8ecef 40%,
+        #ebecee 65%,
+        #e6e8ea 85%,
+        #e2e4e6 100%);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    }
+
+    /* Top-left: cluster of light purple/blue flowers + green leaves */
+    .floral-tl {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 90px;
+      height: 85px;
+      background: radial-gradient(ellipse 45px 40px at 20px 35px, rgba(180,165,220,0.35) 0%, transparent 65%);
+      background-image:
+        radial-gradient(ellipse 28px 26px at 22px 30px, rgba(200,185,230,0.4) 0%, transparent 60%),
+        radial-gradient(ellipse 20px 22px at 38px 35px, rgba(190,175,215,0.35) 0%, transparent 55%),
+        radial-gradient(ellipse 18px 20px at 28px 48px, rgba(160,200,170,0.25) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    /* Mid-right upper: faint light yellow butterfly */
+    .floral-mru {
+      position: absolute;
+      top: 22%;
+      right: 0;
+      width: 55px;
+      height: 50px;
+      background: radial-gradient(ellipse 24px 22px at 15px 25px, rgba(255,248,200,0.4) 0%, transparent 65%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    /* Mid-left: single muted grey/blue flower (between 1st and 2nd frame) */
+    .floral-ml {
+      position: absolute;
+      top: 38%;
+      left: 0;
+      width: 50px;
+      height: 55px;
+      background: radial-gradient(ellipse 22px 28px at 25px 28px, rgba(180,190,210,0.3) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    /* Mid-right lower: faint yellow butterfly */
+    .floral-mrl {
+      position: absolute;
+      top: 52%;
+      right: 0;
+      width: 50px;
+      height: 48px;
+      background: radial-gradient(ellipse 22px 20px at 12px 24px, rgba(255,245,210,0.35) 0%, transparent 65%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    /* Lower-left: muted grey/blue flower (between 2nd and 3rd frame) */
+    .floral-ll {
+      position: absolute;
+      top: 62%;
+      left: 0;
+      width: 48px;
+      height: 52px;
+      background: radial-gradient(ellipse 20px 26px at 24px 26px, rgba(175,185,205,0.28) 0%, transparent 58%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    /* Bottom-right: prominent yellow-orange wispy flowers + grey/blue */
+    .floral-br {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 95px;
+      height: 100px;
+      background-image:
+        radial-gradient(ellipse 35px 50px at 55px 70px, rgba(255,220,160,0.4) 0%, transparent 55%),
+        radial-gradient(ellipse 25px 45px at 65px 55px, rgba(255,235,180,0.35) 0%, transparent 50%),
+        radial-gradient(ellipse 30px 28px at 35px 65px, rgba(185,195,215,0.28) 0%, transparent 52%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    /* Bottom-left: smaller cluster purple/blue flowers and leaves */
+    .floral-bl {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 75px;
+      height: 80px;
+      background-image:
+        radial-gradient(ellipse 26px 24px at 28px 50px, rgba(185,170,220,0.35) 0%, transparent 58%),
+        radial-gradient(ellipse 18px 20px at 42px 58px, rgba(195,180,225,0.3) 0%, transparent 55%),
+        radial-gradient(ellipse 14px 18px at 22px 65px, rgba(165,195,175,0.22) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .strip-inner {
+      position: relative;
+      z-index: 2;
+      padding: 24px 14px 28px;
+    }
+
+    /* Photo slot: container for img + SVG wavy frame overlay */
+    .photo-slot {
+      width: 252px;
+      height: 336px;
+      margin: 0 auto 14px;
+      position: relative;
+    }
+    .photo-slot:last-of-type { margin-bottom: 0; }
+
+    .photo-slot .photo-wrap {
+      position: absolute;
+      inset: 0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    /* Image clipped to wavy inner shape */
+    .photo-slot .photo-wrap img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      clip-path: url(#wavyInner);
+      -webkit-clip-path: url(#wavyInner);
+    }
+
+    /* White wavy frame overlay (same dimensions, drawn on top) */
+    .photo-slot .frame-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    /* Footer: date + names */
+    .footer {
+      padding: 22px 10px 12px;
+      text-align: center;
+    }
+    .footer .date {
+      font-size: 12px;
+      color: #3d4a5c;
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .footer .names {
+      font-size: 17px;
+      font-weight: 700;
+      color: #2d3544;
+      letter-spacing: 0.08em;
+    }
+    .footer .names .and {
+      font-size: 11px;
+      font-weight: 400;
+      font-style: italic;
+      font-family: Georgia, 'Times New Roman', serif;
+      color: #7a8a9e;
+      margin: 0 5px;
+      letter-spacing: 0.02em;
+    }
+    .footer .title {
+      font-size: 11px;
+      color: #5a6575;
+      margin-top: 6px;
+    }
+
+    .photo-slot.hidden { display: none; }
+  </style>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute">
+    <defs>
+      <!-- Wavy/scalloped inner rectangle: photo is clipped to this shape -->
+      <clipPath id="wavyInner" clipPathUnits="objectBoundingBox">
+        <path d="M 0.12,0.12 L 0.28,0.09 L 0.44,0.12 L 0.60,0.09 L 0.76,0.12 L 0.88,0.12 L 0.91,0.28 L 0.88,0.44 L 0.91,0.60 L 0.88,0.76 L 0.88,0.88 L 0.76,0.91 L 0.60,0.88 L 0.44,0.91 L 0.28,0.88 L 0.12,0.88 L 0.09,0.76 L 0.12,0.60 L 0.09,0.44 L 0.12,0.28 Z"/>
+      </clipPath>
+      <!-- White frame = outer rounded rect minus wavy inner (evenodd), 252x336 coords -->
+      <path id="whiteFrame" fill-rule="evenodd" fill="#fff" d="M 8,0 L 244,0 Q 252,0 252,8 L 252,328 Q 252,336 244,336 L 8,336 Q 0,336 0,328 L 0,8 Q 0,0 8,0 Z M 30.24,40.32 L 70.56,30.24 L 110.88,40.32 L 151.2,30.24 L 191.52,40.32 L 221.76,40.32 L 229.32,94.08 L 221.76,147.84 L 229.32,201.6 L 221.76,255.36 L 221.76,295.68 L 191.52,305.76 L 151.2,295.68 L 110.88,305.76 L 70.56,295.68 L 30.24,295.68 L 22.68,255.36 L 30.24,201.6 L 22.68,147.84 L 30.24,94.08 Z"/>
+    </defs>
+  </svg>
+
+  <div class="strip">
+    <div class="floral-tl"></div>
+    <div class="floral-mru"></div>
+    <div class="floral-ml"></div>
+    <div class="floral-mrl"></div>
+    <div class="floral-ll"></div>
+    <div class="floral-br"></div>
+    <div class="floral-bl"></div>
+    <div class="strip-inner">
+      <div class="photo-slot" id="slot1">
+        <div class="photo-wrap"><img id="img1" src="" alt=""></div>
+        <svg class="frame-svg" viewBox="0 0 252 336" preserveAspectRatio="none"><use href="#whiteFrame"/></svg>
+      </div>
+      <div class="photo-slot" id="slot2">
+        <div class="photo-wrap"><img id="img2" src="" alt=""></div>
+        <svg class="frame-svg" viewBox="0 0 252 336" preserveAspectRatio="none"><use href="#whiteFrame"/></svg>
+      </div>
+      <div class="photo-slot" id="slot3">
+        <div class="photo-wrap"><img id="img3" src="" alt=""></div>
+        <svg class="frame-svg" viewBox="0 0 252 336" preserveAspectRatio="none"><use href="#whiteFrame"/></svg>
+      </div>
+      <div class="photo-slot hidden" id="slot4">
+        <div class="photo-wrap"><img id="img4" src="" alt=""></div>
+        <svg class="frame-svg" viewBox="0 0 252 336" preserveAspectRatio="none"><use href="#whiteFrame"/></svg>
+      </div>
+      <div class="footer">
+        <div class="date" id="dateEl"></div>
+        <div class="names" id="namesEl"></div>
+        <div class="title" id="titleEl"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      var slots = Math.min(4, Math.max(2, parseInt(params.get('slots') || '3', 10)));
+      var stripHeights = { 2: 798, 3: 1148, 4: 1498 };
+      var stripEl = document.querySelector('.strip');
+      if (stripEl) stripEl.style.minHeight = (stripHeights[slots] || 1148) + 'px';
+
+      var photo1 = params.get('photo1') || '';
+      var photo2 = params.get('photo2') || '';
+      var photo3 = params.get('photo3') || '';
+      var photo4 = params.get('photo4') || '';
+      var date = params.get('date') || '';
+      var names = params.get('names') || '';
+      var title = params.get('title') || '';
+
+      var urls = [photo1, photo2, photo3, photo4];
+      for (var i = 0; i < 4; i++) {
+        var slot = document.getElementById('slot' + (i + 1));
+        var img = document.getElementById('img' + (i + 1));
+        if (i < slots && urls[i]) {
+          slot.classList.remove('hidden');
+          img.src = urls[i];
+          img.onerror = function() { this.style.background = '#ddd'; };
+        } else {
+          slot.classList.add('hidden');
+        }
+      }
+
+      document.getElementById('dateEl').textContent = date;
+      var namesEl = document.getElementById('namesEl');
+      if (names) {
+        var parts = names.split(/\s+and\s+/i);
+        if (parts.length >= 2) {
+          namesEl.innerHTML = parts[0].trim() + ' <span class="and">and</span> ' + parts.slice(1).join(' ').trim();
+        } else {
+          namesEl.textContent = names;
+        }
+      }
+      document.getElementById('titleEl').textContent = title;
+    })();
+  </script>
+</body>
+</html>
