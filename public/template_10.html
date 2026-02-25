@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2, user-scalable=yes">
+  <title>Photo Strip - Peach</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Allura&family=Dancing+Script:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { min-height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F5F5F7;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px 16px;
+    }
+
+    .strip {
+      width: 280px;
+      min-height: 1180px;
+      flex-shrink: 0;
+      background: #FFF0E5;
+      position: relative;
+      overflow: visible;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      padding: 20px 14px 28px;
+    }
+
+    .strip-inner { position: relative; }
+
+    .photo-slot {
+      width: 252px;
+      height: 336px;
+      margin: 0 auto 14px;
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #FFF0E5;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.8);
+    }
+    .photo-slot:last-of-type { margin-bottom: 0; }
+
+    .photo-slot .photo-wrap {
+      position: absolute;
+      inset: 3px;
+      border-radius: 5px;
+      overflow: hidden;
+      background: #f5ebe4;
+      border: 1px solid rgba(255,255,255,0.9);
+    }
+
+    .photo-slot .photo-wrap img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      border-radius: 4px;
+    }
+
+    .photo-slot.hidden { display: none; }
+
+    .footer {
+      padding: 26px 10px 0;
+      text-align: center;
+    }
+
+    .footer .script-text {
+      font-family: 'Allura', 'Dancing Script', cursive;
+      font-size: 30px;
+      font-weight: 500;
+      color: #3d3d3d;
+      letter-spacing: 0.02em;
+      line-height: 1.3;
+    }
+  </style>
+</head>
+<body>
+  <div class="strip">
+    <div class="strip-inner">
+      <div class="photo-slot" id="slot1">
+        <div class="photo-wrap"><img id="img1" src="" alt=""></div>
+      </div>
+      <div class="photo-slot" id="slot2">
+        <div class="photo-wrap"><img id="img2" src="" alt=""></div>
+      </div>
+      <div class="photo-slot" id="slot3">
+        <div class="photo-wrap"><img id="img3" src="" alt=""></div>
+      </div>
+      <div class="photo-slot hidden" id="slot4">
+        <div class="photo-wrap"><img id="img4" src="" alt=""></div>
+      </div>
+      <div class="footer">
+        <div class="script-text" id="textEl"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      var slots = Math.min(4, Math.max(1, parseInt(params.get('slots') || '4', 10)));
+      var stripHeights = { 1: 462, 2: 798, 3: 1148, 4: 1498 };
+      var stripEl = document.querySelector('.strip');
+      if (stripEl) stripEl.style.minHeight = (stripHeights[slots] || 1498) + 'px';
+
+      var photo1 = params.get('photo1') || '';
+      var photo2 = params.get('photo2') || '';
+      var photo3 = params.get('photo3') || '';
+      var photo4 = params.get('photo4') || '';
+      var names = params.get('names') || '';
+      var title = params.get('title') || '';
+
+      var urls = [photo1, photo2, photo3, photo4];
+      for (var i = 0; i < 4; i++) {
+        var slot = document.getElementById('slot' + (i + 1));
+        var img = document.getElementById('img' + (i + 1));
+        if (i < slots && urls[i]) {
+          slot.classList.remove('hidden');
+          img.src = urls[i];
+          img.onerror = function() { this.style.background = '#e8e0d8'; };
+        } else {
+          slot.classList.add('hidden');
+        }
+      }
+
+      var text = (names || title || 'Cô gái tháng 5').trim();
+      document.getElementById('textEl').textContent = text;
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2, user-scalable=yes">
+  <title>Photo Strip - Happy Birthday</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { min-height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F5F5F7;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px 16px;
+    }
+
+    .strip {
+      width: 280px;
+      min-height: 1180px;
+      flex-shrink: 0;
+      background: #FFFFFF;
+      position: relative;
+      overflow: visible;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      padding: 0 14px 24px;
+    }
+
+    /* Checkerboard top border */
+    .checkerboard {
+      height: 16px;
+      margin: 0 -14px 16px;
+      background: #000;
+      background-image:
+        linear-gradient(45deg, #fff 25%, transparent 25%),
+        linear-gradient(-45deg, #fff 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #fff 75%),
+        linear-gradient(-45deg, transparent 75%, #fff 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+      background-color: #000;
+    }
+
+    .strip-inner { position: relative; }
+
+    .photo-slot {
+      width: 252px;
+      height: 336px;
+      margin: 0 auto 14px;
+      position: relative;
+      overflow: visible;
+      background: #fff;
+    }
+    .photo-slot:last-of-type { margin-bottom: 0; }
+
+    /* Slot 1: arch-top frame, black outline */
+    .photo-slot.slot-arch {
+      border: 2px solid #000;
+      border-radius: 24px 24px 8px 8px;
+    }
+    .photo-slot.slot-arch .photo-wrap {
+      border-radius: 20px 20px 6px 6px;
+    }
+
+    /* Slot 2: rounded rect, black outline */
+    .photo-slot.slot-rect {
+      border: 2px solid #000;
+      border-radius: 10px;
+    }
+    .photo-slot.slot-rect .photo-wrap { border-radius: 8px; }
+
+    /* Slot 3: rounded rect, double red outline */
+    .photo-slot.slot-red {
+      border-radius: 10px;
+      box-shadow: 0 0 0 2px #FF0000, 0 0 0 4px #FF0000;
+      border: 1px solid #FF0000;
+    }
+    .photo-slot.slot-red .photo-wrap { border-radius: 8px; }
+
+    .photo-slot .photo-wrap {
+      position: absolute;
+      inset: 4px;
+      overflow: hidden;
+      background: #f0f0f0;
+    }
+    .photo-slot .photo-wrap img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Decorations - slot 1 */
+    .dec-s1-swirl { position: absolute; top: -4px; left: -8px; width: 28px; height: 24px; z-index: 2; }
+    .dec-s1-circle { position: absolute; top: -4px; right: 8px; width: 10px; height: 10px; border-radius: 50%; background: #000; z-index: 2; }
+    .dec-s1-red-diamond { position: absolute; top: 42%; right: -10px; width: 16px; height: 16px; border: 2px solid #FF0000; transform: rotate(45deg); z-index: 2; }
+    .dec-s1-star-l { position: absolute; left: -8px; top: 38%; width: 10px; height: 10px; z-index: 2; }
+    .dec-s1-star-bl { position: absolute; left: -6px; bottom: 15%; width: 10px; height: 10px; z-index: 2; }
+
+    /* Slot 3 decorations */
+    .dec-s3-circle { position: absolute; top: -4px; right: 8px; width: 10px; height: 10px; border-radius: 50%; background: #000; z-index: 2; }
+    .dec-s3-flourish-l { position: absolute; left: -20px; top: 50%; transform: translateY(-50%); width: 24px; height: 40px; z-index: 2; }
+    .dec-s3-flourish-r { position: absolute; right: -20px; top: 50%; transform: translateY(-50%); width: 24px; height: 40px; z-index: 2; }
+
+    .photo-slot.hidden { display: none; }
+
+    .footer {
+      padding: 28px 10px 0;
+      text-align: center;
+    }
+    .footer-inner {
+      display: inline-block;
+      position: relative;
+      text-align: left;
+    }
+    .footer .line1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #FF0000;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .footer .underline {
+      display: block;
+      height: 2px;
+      background: #000;
+      margin: 4px 0 6px;
+      width: 100%;
+    }
+    .footer .line2 {
+      font-size: 24px;
+      font-weight: 800;
+      color: #000;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .footer .dec-asterisk { position: absolute; top: -6px; left: 8px; font-size: 14px; color: #000; }
+    .footer .dec-circle { position: absolute; top: 28px; right: 4px; width: 8px; height: 8px; border-radius: 50%; background: #000; }
+    .footer .dec-diamond { position: absolute; bottom: -18px; left: 0; width: 12px; height: 12px; border: 2px solid #000; transform: rotate(45deg); }
+    .footer .dec-plus { position: absolute; bottom: -14px; right: 0; font-size: 16px; font-weight: 700; color: #FF0000; line-height: 1; }
+  </style>
+</head>
+<body>
+  <div class="strip">
+    <div class="checkerboard"></div>
+    <div class="strip-inner">
+      <div class="photo-slot slot-arch" id="slot1">
+        <svg class="dec-s1-swirl" viewBox="0 0 28 24" fill="none" stroke="#000" stroke-width="1.5"><path d="M4 20 Q8 4 14 12 Q20 2 24 8"/></svg>
+        <span class="dec-s1-circle"></span>
+        <span class="dec-s1-red-diamond"></span>
+        <svg class="dec-s1-star-l" viewBox="0 0 10 10"><path d="M5 0 L6 4 L10 5 L6 6 L5 10 L4 6 L0 5 L4 4 Z" fill="#000"/></svg>
+        <svg class="dec-s1-star-bl" viewBox="0 0 10 10"><path d="M5 0 L6 4 L10 5 L6 6 L5 10 L4 6 L0 5 L4 4 Z" fill="#000"/></svg>
+        <div class="photo-wrap"><img id="img1" src="" alt=""></div>
+      </div>
+      <div class="photo-slot slot-rect" id="slot2">
+        <div class="photo-wrap"><img id="img2" src="" alt=""></div>
+      </div>
+      <div class="photo-slot slot-red" id="slot3">
+        <span class="dec-s3-circle"></span>
+        <svg class="dec-s3-flourish-l" viewBox="0 0 24 40" stroke="#000" stroke-width="1.2" fill="none"><path d="M20 4 Q8 20 12 36 M4 8 Q16 24 8 40"/></svg>
+        <svg class="dec-s3-flourish-r" viewBox="0 0 24 40" stroke="#000" stroke-width="1.2" fill="none"><path d="M4 4 Q16 20 12 36 M20 8 Q8 24 16 40"/></svg>
+        <div class="photo-wrap"><img id="img3" src="" alt=""></div>
+      </div>
+      <div class="photo-slot slot-rect hidden" id="slot4">
+        <div class="photo-wrap"><img id="img4" src="" alt=""></div>
+      </div>
+      <div class="footer">
+        <div class="footer-inner">
+          <span class="dec-asterisk">*</span>
+          <span class="dec-circle"></span>
+          <div class="line1" id="line1El">HAPPY</div>
+          <span class="underline"></span>
+          <div class="line2" id="line2El">BIRTHDAY</div>
+          <span class="dec-diamond"></span>
+          <span class="dec-plus">+</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      var slots = Math.min(4, Math.max(1, parseInt(params.get('slots') || '3', 10)));
+      var stripHeights = { 1: 462, 2: 798, 3: 1148, 4: 1498 };
+      var stripEl = document.querySelector('.strip');
+      if (stripEl) stripEl.style.minHeight = (stripHeights[slots] || 1148) + 'px';
+
+      var photo1 = params.get('photo1') || '';
+      var photo2 = params.get('photo2') || '';
+      var photo3 = params.get('photo3') || '';
+      var photo4 = params.get('photo4') || '';
+      var title = params.get('title') || 'HAPPY BIRTHDAY';
+
+      var urls = [photo1, photo2, photo3, photo4];
+      for (var i = 0; i < 4; i++) {
+        var slot = document.getElementById('slot' + (i + 1));
+        var img = document.getElementById('img' + (i + 1));
+        if (i < slots && urls[i]) {
+          slot.classList.remove('hidden');
+          img.src = urls[i];
+          img.onerror = function() { this.style.background = '#ddd'; };
+        } else {
+          slot.classList.add('hidden');
+        }
+      }
+
+      var parts = (title || 'HAPPY BIRTHDAY').trim().split(/\s+/);
+      document.getElementById('line1El').textContent = parts[0] ? parts[0].toUpperCase() : 'HAPPY';
+      document.getElementById('line2El').textContent = parts.slice(1).join(' ').toUpperCase() || 'BIRTHDAY';
+    })();
+  </script>
+</body>
+</html>

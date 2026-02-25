@@ -249,8 +249,8 @@
   <script>
     (function() {
       var params = new URLSearchParams(window.location.search);
-      var slots = Math.min(4, Math.max(2, parseInt(params.get('slots') || '3', 10)));
-      var stripHeights = { 2: 798, 3: 1148, 4: 1498 };
+      var slots = Math.min(4, Math.max(1, parseInt(params.get('slots') || '3', 10)));
+      var stripHeights = { 1: 462, 2: 798, 3: 1148, 4: 1498 };
       var stripEl = document.querySelector('.strip');
       if (stripEl) stripEl.style.minHeight = (stripHeights[slots] || 1148) + 'px';
 

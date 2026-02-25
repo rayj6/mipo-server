@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2, user-scalable=yes">
+  <title>Photo Strip - Clapperboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Nothing+You+Could+Do&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { min-height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F5F5F7;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px 16px;
+    }
+
+    /* Dark film strip with distressed texture */
+    .film-strip {
+      width: 280px;
+      min-height: 1180px;
+      flex-shrink: 0;
+      position: relative;
+      display: flex;
+      background: #1a1a1a;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.35);
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E"), #1a1a1a;
+    }
+
+    /* Left rail with rectangular sprocket holes */
+    .film-rail {
+      width: 14px;
+      flex-shrink: 0;
+      position: relative;
+      background: #0d0d0d;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 14 22' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='14' height='22' fill='%230d0d0d'/%3E%3Crect x='2' y='4' width='10' height='12' fill='%23333'/%3E%3C/svg%3E");
+      background-size: 14px 22px;
+    }
+
+    /* Center: photo frames + clapperboard */
+    .film-body {
+      width: 252px;
+      flex-shrink: 0;
+      min-height: 0;
+      background: #252525;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E"), #252525;
+    }
+
+    .film-frames {
+      padding: 10px 0 0;
+    }
+
+    .photo-slot {
+      width: 252px;
+      height: 336px;
+      margin: 0 auto 8px;
+      position: relative;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #3a3a3a;
+      border: 1px solid rgba(255,255,255,0.15);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+    }
+    .photo-slot:last-of-type { margin-bottom: 0; }
+
+    .photo-slot .photo-wrap {
+      position: absolute;
+      inset: 2px;
+      border-radius: 4px;
+      overflow: hidden;
+      background: #e0e0e0;
+    }
+
+    .photo-slot .photo-wrap img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      border-radius: 3px;
+    }
+
+    .photo-slot.hidden { display: none; }
+
+    /* Clapperboard footer */
+    .clapperboard {
+      margin-top: 12px;
+      padding: 20px 14px 24px;
+      position: relative;
+    }
+
+    .clapperboard-shape {
+      position: absolute;
+      inset: 0;
+      background: #1a1a1a;
+      border-radius: 4px;
+      overflow: hidden;
+      opacity: 0.97;
+    }
+    /* Top hinged part - diagonal stripes */
+    .clapperboard-top {
+      height: 32px;
+      background: repeating-linear-gradient(
+        -45deg,
+        #fff 0,
+        #fff 6px,
+        #e0e0e0 6px,
+        #e0e0e0 12px
+      );
+      margin-bottom: 2px;
+    }
+    /* Main body with rivets */
+    .clapperboard-main {
+      position: relative;
+      background: #1a1a1a;
+      padding: 16px 12px 36px;
+      min-height: 120px;
+    }
+    .clapperboard-main::before,
+    .clapperboard-main::after {
+      content: '';
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #444;
+      border: 1px solid #555;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    .clapperboard-main::before { top: 8px; left: 8px; }
+    .clapperboard-main::after { top: 8px; right: 8px; }
+    .clapperboard-rivet-b { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: #444; border: 1px solid #555; bottom: 8px; left: 8px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); }
+    .clapperboard-rivet-c { position: absolute; bottom: 8px; right: 8px; width: 6px; height: 6px; border-radius: 50%; background: #444; border: 1px solid #555; box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); }
+
+    .clapperboard-content {
+      position: relative;
+      z-index: 1;
+      color: #e8e8e8;
+    }
+
+    .clapper-row {
+      display: flex;
+      align-items: baseline;
+      margin-bottom: 8px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .clapper-row:last-of-type { margin-bottom: 0; }
+
+    .clapper-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: rgba(255,255,255,0.6);
+      text-transform: uppercase;
+      min-width: 52px;
+    }
+
+    .clapper-value {
+      font-size: 12px;
+      color: #e8e8e8;
+    }
+    .clapper-value.script {
+      font-family: 'Nothing You Could Do', 'Caveat', cursive;
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    .clapper-row.title .clapper-value,
+    .clapper-row.director .clapper-value { flex: 1; }
+
+    /* MIPO at bottom */
+    .clapperboard-brand {
+      position: absolute;
+      bottom: 10px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.5);
+    }
+  </style>
+</head>
+<body>
+  <div class="film-strip">
+    <div class="film-rail film-rail-left"></div>
+
+    <div class="film-body">
+      <div class="film-frames">
+        <div class="photo-slot" id="slot1">
+          <div class="photo-wrap"><img id="img1" src="" alt=""></div>
+        </div>
+        <div class="photo-slot" id="slot2">
+          <div class="photo-wrap"><img id="img2" src="" alt=""></div>
+        </div>
+        <div class="photo-slot" id="slot3">
+          <div class="photo-wrap"><img id="img3" src="" alt=""></div>
+        </div>
+        <div class="photo-slot hidden" id="slot4">
+          <div class="photo-wrap"><img id="img4" src="" alt=""></div>
+        </div>
+      </div>
+
+      <div class="clapperboard">
+        <div class="clapperboard-shape">
+          <div class="clapperboard-top"></div>
+          <div class="clapperboard-main">
+            <span class="clapperboard-rivet-b"></span>
+            <span class="clapperboard-rivet-c"></span>
+            <div class="clapperboard-content">
+              <div class="clapper-row title">
+                <span class="clapper-label">TITLE</span>
+                <span class="clapper-value script" id="titleEl">Birthday Party</span>
+              </div>
+              <div class="clapper-row director">
+                <span class="clapper-label">DIRECTOR</span>
+                <span class="clapper-value script" id="namesEl">Your Name</span>
+              </div>
+              <div class="clapper-row">
+                <span class="clapper-label">DATE</span>
+                <span class="clapper-value" id="dateEl">20 October</span>
+              </div>
+              <div class="clapper-row">
+                <span class="clapper-label">SCENE</span>
+                <span class="clapper-value" id="sceneEl">Surprise</span>
+              </div>
+              <div class="clapper-row">
+                <span class="clapper-label">TAKE</span>
+                <span class="clapper-value" id="takeEl">4</span>
+              </div>
+            </div>
+            <div class="clapperboard-brand">MIPO</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="film-rail film-rail-right"></div>
+  </div>
+
+  <script>
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      var slots = Math.min(4, Math.max(1, parseInt(params.get('slots') || '2', 10)));
+      var stripHeights = { 1: 462, 2: 798, 3: 1148, 4: 1498 };
+      var stripEl = document.querySelector('.film-strip');
+      if (stripEl) stripEl.style.minHeight = (stripHeights[slots] || 798) + 'px';
+
+      var photo1 = params.get('photo1') || '';
+      var photo2 = params.get('photo2') || '';
+      var photo3 = params.get('photo3') || '';
+      var photo4 = params.get('photo4') || '';
+      var date = params.get('date') || '';
+      var names = params.get('names') || '';
+      var title = params.get('title') || '';
+      var scene = params.get('scene') || params.get('event') || 'Surprise';
+      var take = params.get('take') || params.get('takeNumber') || '4';
+
+      var urls = [photo1, photo2, photo3, photo4];
+      for (var i = 0; i < 4; i++) {
+        var slot = document.getElementById('slot' + (i + 1));
+        var img = document.getElementById('img' + (i + 1));
+        if (i < slots && urls[i]) {
+          slot.classList.remove('hidden');
+          img.src = urls[i];
+          img.onerror = function() { this.style.background = '#555'; };
+        } else {
+          slot.classList.add('hidden');
+        }
+      }
+
+      document.getElementById('titleEl').textContent = title || 'Birthday Party';
+      document.getElementById('namesEl').textContent = names || 'Your Name';
+      document.getElementById('dateEl').textContent = date || '20 October';
+      document.getElementById('sceneEl').textContent = scene;
+      document.getElementById('takeEl').textContent = take;
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2, user-scalable=yes">
+  <title>Photo Strip - Prom Night Sky</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { min-height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F5F5F7;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px 16px;
+    }
+
+    .strip {
+      width: 280px;
+      min-height: 1180px;
+      flex-shrink: 0;
+      position: relative;
+      overflow: visible;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+      background: linear-gradient(180deg, #0f1629 0%, #1a2340 30%, #151d35 60%, #0d1225 100%);
+    }
+
+    /* Stardust / sparkles */
+    .strip::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(1.5px 1.5px at 10% 5%, rgba(200,220,255,0.9) 0%, transparent 100%),
+        radial-gradient(1px 1px at 25% 12%, rgba(220,235,255,0.8) 0%, transparent 100%),
+        radial-gradient(2px 2px at 90% 8%, rgba(180,210,255,0.85) 0%, transparent 100%),
+        radial-gradient(1px 1px at 75% 18%, rgba(200,220,255,0.7) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 15% 28%, rgba(220,230,255,0.75) 0%, transparent 100%),
+        radial-gradient(1px 1px at 88% 38%, rgba(190,215,255,0.8) 0%, transparent 100%),
+        radial-gradient(2px 2px at 8% 48%, rgba(210,225,255,0.7) 0%, transparent 100%),
+        radial-gradient(1px 1px at 92% 55%, rgba(200,220,255,0.85) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 20% 65%, rgba(220,235,255,0.75) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85% 72%, rgba(180,210,255,0.8) 0%, transparent 100%),
+        radial-gradient(2px 2px at 12% 85%, rgba(200,220,255,0.9) 0%, transparent 100%),
+        radial-gradient(1px 1px at 78% 92%, rgba(220,230,255,0.7) 0%, transparent 100%);
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .strip-inner {
+      position: relative;
+      z-index: 2;
+      padding: 18px 14px 18px;
+    }
+
+    .photo-slot {
+      width: 252px;
+      height: 336px;
+      margin: 0 auto 10px;
+      position: relative;
+      overflow: hidden;
+      background: #0d1225;
+    }
+    .photo-slot:last-of-type { margin-bottom: 0; }
+
+    .photo-slot .photo-wrap {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .photo-slot .photo-wrap img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Golden four-pointed stars - positioned around frames */
+    .star {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      pointer-events: none;
+      z-index: 3;
+    }
+    .star svg { width: 100%; height: 100%; }
+    .star.s1 { top: 8%; left: -4px; width: 28px; height: 28px; }
+    .star.s2 { top: 8%; right: -6px; width: 20px; height: 20px; }
+    .star.s3 { top: 34%; left: -8px; width: 32px; height: 32px; }
+    .star.s4 { top: 38%; right: -4px; width: 22px; height: 22px; }
+    .star.s5 { top: 62%; left: -6px; width: 26px; height: 26px; }
+    .star.s6 { top: 58%; right: -4px; width: 20px; height: 20px; }
+    .star.s7 { bottom: 22%; left: -4px; width: 18px; height: 18px; }
+    .star.s8 { bottom: 24%; right: -6px; width: 24px; height: 24px; }
+
+    /* Glossy orbs (balloons/pearls) */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 3;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), rgba(200,225,255,0.9) 40%, rgba(160,200,240,0.7) 70%, rgba(120,170,220,0.5));
+      box-shadow: inset -3px -3px 8px rgba(255,255,255,0.4), inset 2px 2px 6px rgba(0,0,0,0.1);
+    }
+    .orb.o1 { top: 4%; left: -12px; width: 36px; height: 36px; }
+    .orb.o2 { top: 32%; right: -14px; width: 40px; height: 40px; }
+    .orb.o3 { top: 30%; left: -10px; width: 28px; height: 28px; }
+    .orb.o4 { top: 56%; right: -12px; width: 32px; height: 32px; }
+    .orb.o5 { top: 54%; left: -14px; width: 38px; height: 38px; }
+    .orb.o6 { bottom: 18%; right: -10px; width: 30px; height: 30px; }
+    .orb.o7 { bottom: 14%; left: -16px; width: 34px; height: 34px; }
+
+    .footer {
+      padding: 20px 14px 22px;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .footer .prom-text {
+      font-size: 18px;
+      font-weight: 700;
+      color: #d4a84b;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+
+    .footer .date,
+    .footer .names {
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 6px;
+      letter-spacing: 0.04em;
+    }
+
+    .photo-slot.hidden { display: none; }
+  </style>
+</head>
+<body>
+  <!-- Four-pointed star path: center 12,12; points at top/right/bottom/left with inner notches -->
+  <svg width="0" height="0"><defs><path id="star4" d="M12 1 L14 8 L12 12 L10 8 Z M23 12 L16 14 L12 12 L16 10 Z M12 23 L10 16 L12 12 L14 16 Z M1 12 L8 10 L12 12 L8 14 Z" fill="#d4a84b"/></defs></svg>
+
+  <div class="strip">
+    <!-- Golden four-pointed stars -->
+    <div class="star s1"><svg viewBox="0 0 24 24"><use href="#star4"/></svg></div>
+    <div class="star s2"><svg viewBox="0 0 24 24"><use href="#star4"/></svg></div>
+    <div class="star s3"><svg viewBox="0 0 24 24"><use href="#star4"/></svg></div>
+    <div class="star s4"><svg viewBox="0 0 24 24"><use href="#star4"/></svg></div>
+    <div class="star s5"><svg viewBox="0 0 24 24"><use href="#star4"/></svg></div>
+    <div class="star s6"><svg viewBox="0 0 24 24"><use href="#star4"/></svg></div>
+    <div class="star s7"><svg viewBox="0 0 24 24"><use href="#star4"/></svg></div>
+    <div class="star s8"><svg viewBox="0 0 24 24"><use href="#star4"/></svg></div>
+
+    <!-- Glossy orbs -->
+    <div class="orb o1"></div>
+    <div class="orb o2"></div>
+    <div class="orb o3"></div>
+    <div class="orb o4"></div>
+    <div class="orb o5"></div>
+    <div class="orb o6"></div>
+    <div class="orb o7"></div>
+
+    <div class="strip-inner">
+      <div class="photo-slot" id="slot1">
+        <div class="photo-wrap"><img id="img1" src="" alt=""></div>
+      </div>
+      <div class="photo-slot" id="slot2">
+        <div class="photo-wrap"><img id="img2" src="" alt=""></div>
+      </div>
+      <div class="photo-slot" id="slot3">
+        <div class="photo-wrap"><img id="img3" src="" alt=""></div>
+      </div>
+      <div class="photo-slot hidden" id="slot4">
+        <div class="photo-wrap"><img id="img4" src="" alt=""></div>
+      </div>
+      <div class="footer">
+        <div class="prom-text" id="promEl">PROM NIGHT 2052</div>
+        <div class="date" id="dateEl"></div>
+        <div class="names" id="namesEl"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      var slots = Math.min(4, Math.max(1, parseInt(params.get('slots') || '3', 10)));
+      var stripHeights = { 1: 462, 2: 798, 3: 1148, 4: 1498 };
+      var stripEl = document.querySelector('.strip');
+      if (stripEl) stripEl.style.minHeight = (stripHeights[slots] || 1148) + 'px';
+
+      var photo1 = params.get('photo1') || '';
+      var photo2 = params.get('photo2') || '';
+      var photo3 = params.get('photo3') || '';
+      var photo4 = params.get('photo4') || '';
+      var date = params.get('date') || '';
+      var names = params.get('names') || '';
+      var title = params.get('title') || '';
+
+      var urls = [photo1, photo2, photo3, photo4];
+      for (var i = 0; i < 4; i++) {
+        var slot = document.getElementById('slot' + (i + 1));
+        var img = document.getElementById('img' + (i + 1));
+        if (i < slots && urls[i]) {
+          slot.classList.remove('hidden');
+          img.src = urls[i];
+          img.onerror = function() { this.style.background = '#1a2340'; };
+        } else {
+          slot.classList.add('hidden');
+        }
+      }
+
+      var promEl = document.getElementById('promEl');
+      if (title) promEl.textContent = title.toUpperCase();
+      else if (date) promEl.textContent = 'PROM NIGHT ' + date;
+      else promEl.textContent = 'PROM NIGHT 2052';
+
+      document.getElementById('dateEl').textContent = date;
+      var namesEl = document.getElementById('namesEl');
+      if (names) {
+        var parts = names.split(/\s+and\s+/i);
+        if (parts.length >= 2) {
+          namesEl.innerHTML = parts[0].trim() + ' &amp; ' + parts.slice(1).join(' ').trim();
+        } else {
+          namesEl.textContent = names;
+        }
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2, user-scalable=yes">
+  <title>Photo Strip - Lavender</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Allura&family=Dancing+Script:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { min-height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F5F5F7;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px 16px;
+    }
+
+    .strip {
+      width: 280px;
+      min-height: 1180px;
+      flex-shrink: 0;
+      background: #EBE8EE;
+      position: relative;
+      overflow: visible;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      padding: 20px 14px 0;
+    }
+
+    .strip-inner {
+      position: relative;
+      padding-bottom: 16px;
+    }
+
+    /* Photo frame: rounded, inner thin + outer decorative border */
+    .photo-slot {
+      width: 252px;
+      height: 336px;
+      margin: 0 auto 12px;
+      position: relative;
+      border-radius: 10px;
+      padding: 3px;
+      background: #5a5a5a;
+      box-shadow: 0 0 0 1px #4a4a4a;
+    }
+    .photo-slot:last-of-type { margin-bottom: 0; }
+
+    .photo-slot .photo-wrap {
+      position: absolute;
+      inset: 3px;
+      border-radius: 7px;
+      overflow: hidden;
+      background: #e0e0e0;
+      border: 1px solid #4a4a4a;
+    }
+
+    .photo-slot .photo-wrap img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      border-radius: 6px;
+    }
+
+    /* Corner florals - light purple flowers + leaves */
+    .floral {
+      position: absolute;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .floral svg { display: block; }
+    .floral.f1 { top: 14px; left: 2px; width: 36px; height: 36px; }
+    .floral.f2 { top: 14px; right: 2px; width: 36px; height: 36px; transform: scaleX(-1); }
+    .floral.f3 { top: 680px; left: 2px; width: 32px; height: 32px; transform: scaleY(-1); }
+    .floral.f4 { top: 1028px; right: 2px; width: 32px; height: 32px; transform: scale(-1); }
+    .floral.f5 { top: 1376px; left: 2px; width: 30px; height: 30px; transform: scaleY(-1); }
+
+    .footer {
+      position: relative;
+      padding: 22px 14px 18px;
+      text-align: center;
+      z-index: 2;
+    }
+
+    .footer .names {
+      font-family: 'Allura', 'Dancing Script', cursive;
+      font-size: 28px;
+      font-weight: 500;
+      color: #4a4a4a;
+      letter-spacing: 0.02em;
+      margin-bottom: 14px;
+    }
+
+    .footer .names .and {
+      margin: 0 0.2em;
+      font-weight: 500;
+    }
+
+    .footer .date {
+      font-size: 11px;
+      color: #7a7a7a;
+      letter-spacing: 0.04em;
+    }
+
+    /* Bottom floral border */
+    .footer-floral {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 38px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 38'%3E%3Cg fill='none'%3E%3Cellipse cx='20' cy='24' rx='8' ry='6' fill='%23b8a9c9'/%3E%3Cellipse cx='45' cy='20' rx='7' ry='5' fill='%23c4b5d4'/%3E%3Cellipse cx='70' cy='24' rx='8' ry='6' fill='%23b8a9c9'/%3E%3Cellipse cx='95' cy='18' rx='6' ry='5' fill='%23d0c4dc'/%3E%3Cellipse cx='118' cy='24' rx='8' ry='6' fill='%23b8a9c9'/%3E%3Cellipse cx='142' cy='20' rx='7' ry='5' fill='%23c4b5d4'/%3E%3Cellipse cx='165' cy='24' rx='8' ry='6' fill='%23b8a9c9'/%3E%3Cellipse cx='190' cy='19' rx='6' ry='5' fill='%23d0c4dc'/%3E%3Cellipse cx='212' cy='24' rx='8' ry='6' fill='%23b8a9c9'/%3E%3Cellipse cx='238' cy='21' rx='7' ry='5' fill='%23c4b5d4'/%3E%3Cellipse cx='260' cy='24' rx='8' ry='6' fill='%23b8a9c9'/%3E%3Cpath d='M0 28 Q70 18 140 26 T280 24' stroke='%2385a078' stroke-width='4' fill='none'/%3E%3Cpath d='M0 30 Q70 22 140 30 T280 28' stroke='%237a906e' stroke-width='3' fill='none'/%3E%3C/g%3E%3C/svg%3E") no-repeat center bottom;
+      background-size: 100% 100%;
+      z-index: 0;
+    }
+
+    .photo-slot.hidden { display: none; }
+    .strip[data-slots="2"] .floral.f4,
+    .strip[data-slots="2"] .floral.f5,
+    .strip[data-slots="3"] .floral.f5 { display: none; }
+  </style>
+</head>
+<body>
+  <!-- Small flower cluster (light purple petals, yellow center, leaves) -->
+  <svg width="0" height="0">
+    <defs>
+      <g id="flowerCluster">
+        <ellipse cx="14" cy="12" rx="5" ry="6" fill="#b8a9c9"/>
+        <ellipse cx="20" cy="14" rx="5" ry="6" fill="#c4b5d4"/>
+        <circle cx="17" cy="13" r="2.5" fill="#e8d84a"/>
+        <path d="M8 18 Q12 14 16 18" stroke="#85a078" stroke-width="2" fill="none"/>
+        <path d="M18 20 Q14 16 10 20" stroke="#7a906e" stroke-width="1.5" fill="none"/>
+      </g>
+    </defs>
+  </svg>
+
+  <div class="strip">
+    <div class="strip-inner">
+      <div class="photo-slot" id="slot1">
+        <div class="floral f1"><svg viewBox="0 0 36 36"><use href="#flowerCluster" x="0" y="0" width="36" height="36"/></svg></div>
+        <div class="floral f2"><svg viewBox="0 0 36 36"><use href="#flowerCluster" x="0" y="0" width="36" height="36"/></svg></div>
+        <div class="photo-wrap"><img id="img1" src="" alt=""></div>
+      </div>
+      <div class="photo-slot" id="slot2">
+        <div class="floral f3"><svg viewBox="0 0 36 36"><use href="#flowerCluster" x="0" y="0" width="36" height="36"/></svg></div>
+        <div class="photo-wrap"><img id="img2" src="" alt=""></div>
+      </div>
+      <div class="photo-slot" id="slot3">
+        <div class="floral f4"><svg viewBox="0 0 36 36"><use href="#flowerCluster" x="0" y="0" width="36" height="36"/></svg></div>
+        <div class="photo-wrap"><img id="img3" src="" alt=""></div>
+      </div>
+      <div class="photo-slot hidden" id="slot4">
+        <div class="floral f5"><svg viewBox="0 0 36 36"><use href="#flowerCluster" x="0" y="0" width="36" height="36"/></svg></div>
+        <div class="photo-wrap"><img id="img4" src="" alt=""></div>
+      </div>
+      <div class="footer">
+        <div class="footer-floral"></div>
+        <div class="names" id="namesEl"></div>
+        <div class="date" id="dateEl"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      var slots = Math.min(4, Math.max(1, parseInt(params.get('slots') || '4', 10)));
+      var stripHeights = { 1: 462, 2: 798, 3: 1148, 4: 1498 };
+      var stripEl = document.querySelector('.strip');
+      if (stripEl) {
+        stripEl.style.minHeight = (stripHeights[slots] || 1498) + 'px';
+        stripEl.setAttribute('data-slots', String(slots));
+      }
+
+      var photo1 = params.get('photo1') || '';
+      var photo2 = params.get('photo2') || '';
+      var photo3 = params.get('photo3') || '';
+      var photo4 = params.get('photo4') || '';
+      var date = params.get('date') || '';
+      var names = params.get('names') || '';
+      var title = params.get('title') || '';
+
+      var urls = [photo1, photo2, photo3, photo4];
+      for (var i = 0; i < 4; i++) {
+        var slot = document.getElementById('slot' + (i + 1));
+        var img = document.getElementById('img' + (i + 1));
+        if (i < slots && urls[i]) {
+          slot.classList.remove('hidden');
+          img.src = urls[i];
+          img.onerror = function() { this.style.background = '#ddd'; };
+        } else {
+          slot.classList.add('hidden');
+        }
+      }
+
+      document.getElementById('dateEl').textContent = date;
+      var namesEl = document.getElementById('namesEl');
+      if (names) {
+        var parts = names.split(/\s+and\s+|\s*&\s*/i).map(function(s) { return s.trim(); }).filter(Boolean);
+        if (parts.length >= 2) {
+          namesEl.innerHTML = parts[0] + ' <span class="and">&amp;</span> ' + parts.slice(1).join(' ');
+        } else {
+          namesEl.textContent = names;
+        }
+      } else {
+        namesEl.textContent = '';
+      }
+    })();
+  </script>
+</body>
+</html>
