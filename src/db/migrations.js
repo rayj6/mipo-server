@@ -74,9 +74,16 @@ async function runMigrations() {
         css_content TEXT NULL,
         created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
         updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
-        UNIQUE KEY uq_slug (slug)
+        UNIQUE KEY uq_slug (slug),
+        KEY idx_is_free (is_free)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
+
+    try {
+      await connection.query(`ALTER TABLE templates ADD KEY idx_is_free (is_free)`);
+    } catch (e) {
+      if (e.code !== 'ER_DUP_KEYNAME' && e.code !== 'ER_MULTIPLE_PRI_KEY') throw e;
+    }
 
     await connection.query(`
       CREATE TABLE IF NOT EXISTS password_reset_tokens (

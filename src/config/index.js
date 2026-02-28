@@ -21,10 +21,19 @@ module.exports = {
     database: process.env.DB_NAME,
     port: parseInt(process.env.DB_PORT || '3306', 10),
     waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
+    connectionLimit: parseInt(process.env.DB_POOL_SIZE || '100', 10),
+    queueLimit: parseInt(process.env.DB_QUEUE_LIMIT || '500', 10),
   },
   removeBg: {
     apiKey: process.env.REMOVE_BG_API_KEY || null,
+  },
+  cors: {
+    allowedOrigins: process.env.CORS_ORIGINS
+      ? process.env.CORS_ORIGINS.split(',').map((s) => s.trim()).filter(Boolean)
+      : null,
+  },
+  tempPhotos: {
+    maxEntries: parseInt(process.env.TEMP_PHOTOS_MAX || '10000', 10),
+    ttlMs: parseInt(process.env.TEMP_PHOTOS_TTL_MS || '3600000', 10),
   },
 };

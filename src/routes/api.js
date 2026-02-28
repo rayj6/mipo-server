@@ -1,10 +1,11 @@
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs').promises;
 const config = require('../config');
 const { getBaseUrl } = require('../utils/getBaseUrl');
 const templateService = require('../services/templateService');
 const tempPhotos = require('../services/tempPhotos');
+const { apiHeavyLimiter } = require('../middleware/rateLimit');
 const { buildStripImage, SLOT_WIDTH, SLOT_HEIGHT } = require('../../lib/stripImage');
 const { removeBackground, compositeOnBackground } = require('../../lib/removeBg');
 
@@ -12,18 +13,20 @@ const router = express.Router();
 const publicDir = path.join(__dirname, '../../public');
 const backgroundsDir = path.join(publicDir, 'backgrounds');
 
-function getBackgroundsList(req) {
+async function getBackgroundsList(req) {
   const baseUrl = getBaseUrl(req);
   const list = [{ id: 'original', name: 'Keep original', imageUrl: null }];
   try {
-    if (fs.existsSync(backgroundsDir)) {
-      const files = fs.readdirSync(backgroundsDir).filter((f) => /\.(jpg|jpeg|png|webp)$/i.test(f));
-      for (const f of files) {
+    const files = await fs.readdir(backgroundsDir);
+    for (const f of files) {
+      if (/\.(jpg|jpeg|png|webp)$/i.test(f)) {
         const name = f.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
         list.push({ id: f, name, imageUrl: baseUrl + '/backgrounds/' + encodeURIComponent(f) });
       }
     }
-  } catch (_) {}
+  } catch (e) {
+    if (e.code !== 'ENOENT') console.error('backgrounds list error:', e.message);
+  }
   return list;
 }
 
@@ -88,8 +91,14 @@ router.get('/templates/:id/html', async (req, res) => {
   }
 });
 
-router.get('/backgrounds', (req, res) => {
-  res.json(getBackgroundsList(req));
+router.get('/backgrounds', async (req, res) => {
+  try {
+    const list = await getBackgroundsList(req);
+    res.json(list);
+  } catch (err) {
+    console.error('backgrounds error:', err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 router.get('/temp/:id', (req, res) => {
@@ -99,7 +108,7 @@ router.get('/temp/:id', (req, res) => {
   res.send(entry.buffer);
 });
 
-router.post('/temp-upload', (req, res) => {
+router.post('/temp-upload', apiHeavyLimiter, (req, res) => {
   try {
     let { imageBase64 } = req.body;
     if (!imageBase64 || typeof imageBase64 !== 'string') {
@@ -117,7 +126,7 @@ router.post('/temp-upload', (req, res) => {
   }
 });
 
-router.post('/generate-strip', async (req, res) => {
+router.post('/generate-strip', apiHeavyLimiter, async (req, res) => {
   try {
     const { photoBase64s, title, names, date, slotCount: reqSlots, templateId, backgroundImageUrl, backgroundBase64 } = req.body;
     if (!Array.isArray(photoBase64s) || photoBase64s.length === 0) {
