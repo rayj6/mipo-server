@@ -9,16 +9,31 @@ const RESET_TOKEN_BYTES = 32;
 const RESET_TOKEN_EXPIRY_MS = 60 * 60 * 1000;
 
 const ALLOWED_LANGUAGES = ['en', 'vi', 'es', 'fr', 'ja', 'zh', 'fil', 'my'];
+const ALLOWED_PLANS = ['FREE', 'WEEKLY', 'PRO', 'ANNUAL'];
+
+function hasPaidAccess(row) {
+  if (!row) return false;
+  if (row.is_admin) return true;
+  const plan = (row.plan_id || 'FREE').toUpperCase();
+  if (plan !== 'FREE' && plan !== '') return true;
+  const expiresAt = row.subscription_expires_at ? new Date(row.subscription_expires_at) : null;
+  if (expiresAt && expiresAt > new Date()) return true;
+  return false;
+}
 
 function toSafeUser(row) {
   if (!row) return null;
   const lang = row.language && ALLOWED_LANGUAGES.includes(row.language) ? row.language : 'en';
+  const planId = (row.plan_id || 'FREE').toUpperCase();
   return {
     id: row.id,
     email: row.email,
     displayName: row.display_name,
     language: lang,
     isAdmin: !!(row.is_admin),
+    planId: ALLOWED_PLANS.includes(planId) ? planId : 'FREE',
+    subscriptionExpiresAt: row.subscription_expires_at ? new Date(row.subscription_expires_at).toISOString() : null,
+    hasPaidAccess: hasPaidAccess(row),
   };
 }
 
@@ -44,8 +59,8 @@ async function register(req, res) {
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
     const result = await db.execute(
-      'INSERT INTO users (email, password_hash, display_name, language) VALUES (?, ?, ?, ?)',
-      [trimmedEmail, passwordHash, trimmedName, 'en']
+      'INSERT INTO users (email, password_hash, display_name, language, plan_id) VALUES (?, ?, ?, ?, ?)',
+      [trimmedEmail, passwordHash, trimmedName, 'en', 'FREE']
     );
     const userId = result.insertId;
     const user = { id: userId, email: trimmedEmail, displayName: trimmedName, language: 'en' };
@@ -70,7 +85,7 @@ async function login(req, res) {
     const trimmedEmail = email.trim().toLowerCase();
 
     const row = await db.queryOne(
-      'SELECT id, email, password_hash, display_name, language, is_admin FROM users WHERE email = ?',
+      'SELECT id, email, password_hash, display_name, language, is_admin, plan_id, subscription_expires_at FROM users WHERE email = ?',
       [trimmedEmail]
     );
     if (!row) {
@@ -97,7 +112,7 @@ async function login(req, res) {
 async function me(req, res) {
   try {
     const row = await db.queryOne(
-      'SELECT id, email, display_name, language, is_admin FROM users WHERE id = ?',
+      'SELECT id, email, display_name, language, is_admin, plan_id, subscription_expires_at FROM users WHERE id = ?',
       [req.userId]
     );
     if (!row) {
@@ -112,15 +127,38 @@ async function me(req, res) {
 
 async function updateProfile(req, res) {
   try {
-    const { language } = req.body;
+    const { language, planId, subscriptionExpiresAt } = req.body;
     if (language != null) {
       if (typeof language !== 'string' || !ALLOWED_LANGUAGES.includes(language)) {
         return res.status(400).json({ error: 'Invalid language. Allowed: en, vi, es, fr, ja, zh, fil, my' });
       }
       await db.query('UPDATE users SET language = ?, updated_at = NOW(3) WHERE id = ?', [language, req.userId]);
     }
+    if (planId != null) {
+      const plan = (typeof planId === 'string' ? planId.trim().toUpperCase() : '') || 'FREE';
+      if (!ALLOWED_PLANS.includes(plan)) {
+        return res.status(400).json({ error: 'Invalid planId. Allowed: FREE, WEEKLY, PRO, ANNUAL' });
+      }
+      let expiresVal = null;
+      if (subscriptionExpiresAt != null) {
+        const d = new Date(subscriptionExpiresAt);
+        if (Number.isNaN(d.getTime())) {
+          return res.status(400).json({ error: 'Invalid subscriptionExpiresAt date' });
+        }
+        expiresVal = d.toISOString().slice(0, 23).replace('T', ' ');
+      }
+      await db.query(
+        'UPDATE users SET plan_id = ?, subscription_expires_at = ?, updated_at = NOW(3) WHERE id = ?',
+        [plan, expiresVal, req.userId]
+      );
+    } else if (subscriptionExpiresAt != null) {
+      let expiresVal = null;
+      const d = new Date(subscriptionExpiresAt);
+      if (!Number.isNaN(d.getTime())) expiresVal = d.toISOString().slice(0, 23).replace('T', ' ');
+      await db.query('UPDATE users SET subscription_expires_at = ?, updated_at = NOW(3) WHERE id = ?', [expiresVal, req.userId]);
+    }
     const row = await db.queryOne(
-      'SELECT id, email, display_name, language, is_admin FROM users WHERE id = ?',
+      'SELECT id, email, display_name, language, is_admin, plan_id, subscription_expires_at FROM users WHERE id = ?',
       [req.userId]
     );
     if (!row) {
@@ -235,4 +273,4 @@ async function deleteAccount(req, res) {
   }
 }
 
-module.exports = { register, login, me, updateProfile, forgotPassword, resetPassword, deleteAccount };
+module.exports = { register, login, me, updateProfile, forgotPassword, resetPassword, deleteAccount, hasPaidAccess };

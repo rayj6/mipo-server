@@ -61,6 +61,21 @@ async function runMigrations() {
       if (e.code !== 'ER_DUP_FIELDNAME') throw e;
     }
 
+    try {
+      await connection.query(`
+        ALTER TABLE users ADD COLUMN plan_id VARCHAR(32) NOT NULL DEFAULT 'FREE' AFTER is_admin
+      `);
+    } catch (e) {
+      if (e.code !== 'ER_DUP_FIELDNAME') throw e;
+    }
+    try {
+      await connection.query(`
+        ALTER TABLE users ADD COLUMN subscription_expires_at DATETIME(3) NULL AFTER plan_id
+      `);
+    } catch (e) {
+      if (e.code !== 'ER_DUP_FIELDNAME') throw e;
+    }
+
     await connection.query(`
       CREATE TABLE IF NOT EXISTS templates (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

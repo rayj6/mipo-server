@@ -2,10 +2,13 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs').promises;
 const config = require('../config');
+const db = require('../db/connection');
 const { getBaseUrl } = require('../utils/getBaseUrl');
 const templateService = require('../services/templateService');
 const tempPhotos = require('../services/tempPhotos');
 const { apiHeavyLimiter } = require('../middleware/rateLimit');
+const { optionalAuthenticate } = require('../middleware/auth');
+const { hasPaidAccess } = require('../controllers/authController');
 const { buildStripImage, SLOT_WIDTH, SLOT_HEIGHT } = require('../../lib/stripImage');
 const { removeBackground, compositeOnBackground } = require('../../lib/removeBg');
 
@@ -126,7 +129,7 @@ router.post('/temp-upload', apiHeavyLimiter, (req, res) => {
   }
 });
 
-router.post('/generate-strip', apiHeavyLimiter, async (req, res) => {
+router.post('/generate-strip', apiHeavyLimiter, optionalAuthenticate, async (req, res) => {
   try {
     const { photoBase64s, title, names, date, slotCount: reqSlots, templateId, backgroundImageUrl, backgroundBase64 } = req.body;
     if (!Array.isArray(photoBase64s) || photoBase64s.length === 0) {
@@ -149,6 +152,19 @@ router.post('/generate-strip', apiHeavyLimiter, async (req, res) => {
     }
     if (!templateRow) {
       return res.status(500).json({ success: false, error: 'No templates configured' });
+    }
+    const isPaidTemplate = !templateRow.is_free;
+    if (isPaidTemplate) {
+      if (!req.userId) {
+        return res.status(403).json({ success: false, error: 'Sign in required to use this template. Paid templates require an account with an active plan.' });
+      }
+      const userRow = await db.queryOne(
+        'SELECT id, is_admin, plan_id, subscription_expires_at FROM users WHERE id = ?',
+        [req.userId]
+      );
+      if (!userRow || !hasPaidAccess(userRow)) {
+        return res.status(403).json({ success: false, error: 'This template requires a paid plan. Upgrade in the app to use it.' });
+      }
     }
     const removeBgKey = config.removeBg.apiKey;
     let backgroundBuffer = null;
