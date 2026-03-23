@@ -10,6 +10,19 @@ const RESET_TOKEN_EXPIRY_MS = 60 * 60 * 1000;
 
 const ALLOWED_LANGUAGES = ['en', 'vi', 'es', 'fr', 'ja', 'zh', 'fil', 'my'];
 const ALLOWED_PLANS = ['FREE', 'WEEKLY', 'PRO', 'ANNUAL'];
+const DEMO_EMAIL = (process.env.DEMO_ACCOUNT_EMAIL || 'demo@mipo.app').trim().toLowerCase();
+const DEMO_PASSWORD = process.env.DEMO_ACCOUNT_PASSWORD || 'Demo1234!';
+const DEMO_DISPLAY_NAME = (process.env.DEMO_ACCOUNT_DISPLAY_NAME || 'Mipo Demo').trim();
+
+function buildAuthResponse(row) {
+  const user = toSafeUser(row);
+  const token = jwt.sign(
+    { userId: row.id, email: row.email },
+    config.jwt.secret,
+    { expiresIn: config.jwt.expiresIn }
+  );
+  return { user, token };
+}
 
 function hasPaidAccess(row) {
   if (!row) return false;
@@ -96,16 +109,47 @@ async function login(req, res) {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
-    const user = toSafeUser(row);
-    const token = jwt.sign(
-      { userId: row.id, email: row.email },
-      config.jwt.secret,
-      { expiresIn: config.jwt.expiresIn }
-    );
-    return res.json({ user, token });
+    return res.json(buildAuthResponse(row));
   } catch (err) {
     console.error('Login error:', err);
     return res.status(500).json({ error: 'Login failed' });
+  }
+}
+
+async function createDemoAccount(req, res) {
+  try {
+    const passwordHash = await bcrypt.hash(DEMO_PASSWORD, SALT_ROUNDS);
+    const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+    const expiresVal = expiresAt.toISOString().slice(0, 23).replace('T', ' ');
+    const existing = await db.queryOne('SELECT id FROM users WHERE email = ?', [DEMO_EMAIL]);
+
+    if (!existing) {
+      await db.execute(
+        'INSERT INTO users (email, password_hash, display_name, language, plan_id, subscription_expires_at, is_admin) VALUES (?, ?, ?, ?, ?, ?, 0)',
+        [DEMO_EMAIL, passwordHash, DEMO_DISPLAY_NAME, 'en', 'PRO', expiresVal]
+      );
+    } else {
+      await db.query(
+        'UPDATE users SET password_hash = ?, display_name = ?, plan_id = ?, subscription_expires_at = ?, updated_at = NOW(3) WHERE id = ?',
+        [passwordHash, DEMO_DISPLAY_NAME, 'PRO', expiresVal, existing.id]
+      );
+    }
+
+    const row = await db.queryOne(
+      'SELECT id, email, display_name, language, is_admin, plan_id, subscription_expires_at FROM users WHERE email = ?',
+      [DEMO_EMAIL]
+    );
+    if (!row) return res.status(500).json({ error: 'Failed to prepare demo account' });
+    return res.json({
+      ...buildAuthResponse(row),
+      demoCredentials: {
+        email: DEMO_EMAIL,
+        password: DEMO_PASSWORD,
+      },
+    });
+  } catch (err) {
+    console.error('Create demo account error:', err);
+    return res.status(500).json({ error: 'Failed to create demo account' });
   }
 }
 
@@ -273,4 +317,4 @@ async function deleteAccount(req, res) {
   }
 }
 
-module.exports = { register, login, me, updateProfile, forgotPassword, resetPassword, deleteAccount, hasPaidAccess };
+module.exports = { register, login, me, updateProfile, forgotPassword, resetPassword, deleteAccount, createDemoAccount, hasPaidAccess };

@@ -9,6 +9,7 @@ router.use(authLimiter);
 
 router.post('/register', authController.register);
 router.post('/login', authController.login);
+router.post('/demo-account', authController.createDemoAccount);
 router.get('/me', authenticate, authController.me);
 router.patch('/profile', authenticate, authController.updateProfile);
 router.post('/delete-account', authenticate, authController.deleteAccount);
